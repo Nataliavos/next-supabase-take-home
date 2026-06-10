@@ -6,13 +6,39 @@ Next.js app with local [Supabase](https://supabase.com) development via Docker.
 
 Coffee health dataset loaded into `coffee_health_records` and exposed as a filterable, paginated table at [http://localhost:3000](http://localhost:3000) (Server Component + URL-driven filters: country, gender, sleep quality, stress level, age/BMI/coffee intake ranges).
 
-**Run locally** (first time: `pnpm install` and `pnpm setup:env` to write `.env.local`):
+### Prerequisites (fresh machine)
+
+Install and verify **before** running the project:
+
+| Requirement | Version | Install |
+| --- | --- | --- |
+| [Node.js](https://nodejs.org/) | 24 or later | [nodejs.org/en/download](https://nodejs.org/en/download) |
+| [Docker](https://www.docker.com/) | Latest stable | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
+| [pnpm](https://pnpm.io/) | 10 or later | [pnpm.io/installation](https://pnpm.io/installation) |
+
+Docker must be **running** before you start Supabase. Verify:
 
 ```bash
-pnpx supabase db reset   # migrations + seed.sql (notes table)
-pnpm import:coffee       # loads 10,000 rows (idempotent upsert)
-pnpm dev                 # Supabase + Next.js → http://localhost:3000
+node --version   # v24.x or later
+docker info      # must succeed (not just docker --version)
+pnpm --version   # 10.x or later
 ```
+
+### Quick start (from clone)
+
+Run from your home directory (do not clone into `/`):
+
+```bash
+git clone https://github.com/Nataliavos/next-supabase-take-home.git
+cd next-supabase-take-home
+pnpm install
+pnpm setup:env          # starts Supabase, writes .env.local
+pnpx supabase db reset  # migrations + seed.sql (notes table)
+pnpm import:coffee      # loads 10,000 rows (idempotent upsert)
+pnpm dev                # Supabase + Next.js → http://localhost:3000
+```
+
+If the first page load fails with a fetch error, wait until Supabase finishes starting and refresh the browser.
 
 **Documentation:**
 
