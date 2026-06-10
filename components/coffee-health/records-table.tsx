@@ -17,18 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatBoolean, formatDecimal, formatLabel } from "@/lib/coffee-health/format";
 import type { CoffeeHealthRecord } from "@/lib/ingestion/types";
-
-function formatLabel(value: string): string {
-  return value
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function formatDecimal(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
-}
 
 interface RecordsTableProps {
   rows: CoffeeHealthRecord[];
@@ -59,41 +49,59 @@ export function RecordsTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>ID</TableHead>
-          <TableHead>Age</TableHead>
-          <TableHead>Gender</TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead>Coffee intake</TableHead>
-          <TableHead>Sleep quality</TableHead>
-          <TableHead>Stress level</TableHead>
-          <TableHead>BMI</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id}>
-            <TableCell>{row.id}</TableCell>
-            <TableCell>{row.age}</TableCell>
-            <TableCell>
-              <Badge variant="secondary">{formatLabel(row.gender)}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline">{formatLabel(row.country)}</Badge>
-            </TableCell>
-            <TableCell>{formatDecimal(row.coffee_intake)}</TableCell>
-            <TableCell>
-              <Badge variant="secondary">{formatLabel(row.sleep_quality)}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant="secondary">{formatLabel(row.stress_level)}</Badge>
-            </TableCell>
-            <TableCell>{formatDecimal(row.bmi)}</TableCell>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Age</TableHead>
+            <TableHead>Gender</TableHead>
+            <TableHead>Country</TableHead>
+            <TableHead>Coffee intake</TableHead>
+            <TableHead>Sleep quality</TableHead>
+            <TableHead>Stress level</TableHead>
+            <TableHead>BMI</TableHead>
+            <TableHead>Sleep hours</TableHead>
+            <TableHead>Heart rate</TableHead>
+            <TableHead>Occupation</TableHead>
+            <TableHead>Health issues</TableHead>
+            <TableHead>Smoking</TableHead>
+            <TableHead>Alcohol</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.id}>
+              <TableCell>{row.id}</TableCell>
+              <TableCell>{row.age}</TableCell>
+              <TableCell>
+                <Badge variant="secondary">{formatLabel(row.gender)}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{formatLabel(row.country)}</Badge>
+              </TableCell>
+              <TableCell>{formatDecimal(row.coffee_intake)}</TableCell>
+              <TableCell>
+                <Badge variant="secondary">{formatLabel(row.sleep_quality)}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary">{formatLabel(row.stress_level)}</Badge>
+              </TableCell>
+              <TableCell>{formatDecimal(row.bmi)}</TableCell>
+              <TableCell>{formatDecimal(row.sleep_hours)}</TableCell>
+              <TableCell>{row.heart_rate}</TableCell>
+              <TableCell>
+                <Badge variant="secondary">{formatLabel(row.occupation)}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary">{formatLabel(row.health_issues)}</Badge>
+              </TableCell>
+              <TableCell>{formatBoolean(row.smoking)}</TableCell>
+              <TableCell>{formatBoolean(row.alcohol_consumption)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

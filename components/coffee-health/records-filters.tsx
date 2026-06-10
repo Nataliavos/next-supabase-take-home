@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatLabel } from "@/lib/coffee-health/format";
 import type { CoffeeHealthFilters } from "@/lib/coffee-health/search-params";
 import {
   COUNTRIES,
@@ -17,13 +18,6 @@ import {
   STRESS_LEVELS,
 } from "@/lib/ingestion/constants";
 import { cn } from "@/lib/utils";
-
-function formatLabel(value: string): string {
-  return value
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
 
 const selectClassName = cn(
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm",
@@ -50,6 +44,7 @@ export function RecordsFilters({ filters, action }: RecordsFiltersProps) {
           {...(action !== undefined ? { action } : {})}
           className="space-y-6"
         >
+          <input type="hidden" name="page" value="1" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
@@ -167,6 +162,32 @@ export function RecordsFilters({ filters, action }: RecordsFiltersProps) {
                 min={0}
                 step={0.1}
                 defaultValue={filters.bmi_max ?? ""}
+                placeholder="Max"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coffee_intake_min">Coffee intake min</Label>
+              <Input
+                id="coffee_intake_min"
+                name="coffee_intake_min"
+                type="number"
+                min={0}
+                step={0.1}
+                defaultValue={filters.coffee_intake_min ?? ""}
+                placeholder="Min"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coffee_intake_max">Coffee intake max</Label>
+              <Input
+                id="coffee_intake_max"
+                name="coffee_intake_max"
+                type="number"
+                min={0}
+                step={0.1}
+                defaultValue={filters.coffee_intake_max ?? ""}
                 placeholder="Max"
               />
             </div>

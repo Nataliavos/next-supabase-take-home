@@ -2,7 +2,10 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { CoffeeHealthFilters } from "@/lib/coffee-health/search-params";
+import {
+  buildFilterSearchParams,
+  type CoffeeHealthFilters,
+} from "@/lib/coffee-health/search-params";
 
 interface RecordsPaginationProps {
   filters: CoffeeHealthFilters;
@@ -13,23 +16,7 @@ interface RecordsPaginationProps {
 }
 
 function buildPageHref(filters: CoffeeHealthFilters, page: number): string {
-  const params = new URLSearchParams();
-
-  if (filters.country !== undefined) params.set("country", filters.country);
-  if (filters.gender !== undefined) params.set("gender", filters.gender);
-  if (filters.sleep_quality !== undefined) {
-    params.set("sleep_quality", filters.sleep_quality);
-  }
-  if (filters.stress_level !== undefined) {
-    params.set("stress_level", filters.stress_level);
-  }
-  if (filters.age_min !== undefined) params.set("age_min", String(filters.age_min));
-  if (filters.age_max !== undefined) params.set("age_max", String(filters.age_max));
-  if (filters.bmi_min !== undefined) params.set("bmi_min", String(filters.bmi_min));
-  if (filters.bmi_max !== undefined) params.set("bmi_max", String(filters.bmi_max));
-  if (page > 1) params.set("page", String(page));
-
-  const query = params.toString();
+  const query = buildFilterSearchParams(filters, page).toString();
   return query ? `?${query}` : "";
 }
 

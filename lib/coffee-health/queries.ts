@@ -64,6 +64,12 @@ export async function fetchCoffeeHealthRecords(
   if (filters.bmi_max !== undefined) {
     query = query.lte("bmi", filters.bmi_max);
   }
+  if (filters.coffee_intake_min !== undefined) {
+    query = query.gte("coffee_intake", filters.coffee_intake_min);
+  }
+  if (filters.coffee_intake_max !== undefined) {
+    query = query.lte("coffee_intake", filters.coffee_intake_max);
+  }
 
   const { data, error, count } = await query.range(from, to);
 

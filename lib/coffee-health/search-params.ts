@@ -26,6 +26,8 @@ export interface CoffeeHealthFilters {
   age_max?: number;
   bmi_min?: number;
   bmi_max?: number;
+  coffee_intake_min?: number;
+  coffee_intake_max?: number;
   page: number;
 }
 
@@ -120,9 +122,45 @@ export function parseSearchParams(
     age_max: parseIntegerParam(getSingleParam(params, "age_max")),
     bmi_min: parseDecimalParam(getSingleParam(params, "bmi_min")),
     bmi_max: parseDecimalParam(getSingleParam(params, "bmi_max")),
+    coffee_intake_min: parseDecimalParam(
+      getSingleParam(params, "coffee_intake_min"),
+    ),
+    coffee_intake_max: parseDecimalParam(
+      getSingleParam(params, "coffee_intake_max"),
+    ),
     page: parsePage(getSingleParam(params, "page")),
     pageSize: DEFAULT_PAGE_SIZE,
   };
+}
+
+/** Build URLSearchParams from canonical filter state (for pagination links). */
+export function buildFilterSearchParams(
+  filters: CoffeeHealthFilters,
+  page?: number,
+): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (filters.country !== undefined) params.set("country", filters.country);
+  if (filters.gender !== undefined) params.set("gender", filters.gender);
+  if (filters.sleep_quality !== undefined) {
+    params.set("sleep_quality", filters.sleep_quality);
+  }
+  if (filters.stress_level !== undefined) {
+    params.set("stress_level", filters.stress_level);
+  }
+  if (filters.age_min !== undefined) params.set("age_min", String(filters.age_min));
+  if (filters.age_max !== undefined) params.set("age_max", String(filters.age_max));
+  if (filters.bmi_min !== undefined) params.set("bmi_min", String(filters.bmi_min));
+  if (filters.bmi_max !== undefined) params.set("bmi_max", String(filters.bmi_max));
+  if (filters.coffee_intake_min !== undefined) {
+    params.set("coffee_intake_min", String(filters.coffee_intake_min));
+  }
+  if (filters.coffee_intake_max !== undefined) {
+    params.set("coffee_intake_max", String(filters.coffee_intake_max));
+  }
+  if (page !== undefined && page > 1) params.set("page", String(page));
+
+  return params;
 }
 
 /** Allowed categorical values for filter UIs (re-exported for convenience). */
