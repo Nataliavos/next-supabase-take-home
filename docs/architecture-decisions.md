@@ -84,7 +84,7 @@ If casing is inconsistent in storage, filters become fragile: `WHERE country = '
 
 **Normalize at query time with `LOWER()`.** Keep mixed case in the database; wrap columns and parameters in `LOWER()` in SQL. Works functionally, but expressions like `WHERE LOWER(country) = LOWER($1)` typically prevent direct use of standard btree indexes unless additional functional indexes are created and maintained.
 
-**Normalize during ingestion.** Transform all categorical text and country names to lowercase before persistence. Enforce the rule at the database layer via ENUM labels and `CHECK (country = lower(country))`. Apply title-case formatting only in the UI layer (`formatLabel()` in `components/coffee-health/`).
+**Normalize during ingestion.** Transform all categorical text and country names to lowercase before persistence. Enforce the rule at the database layer via ENUM labels and `CHECK (country = lower(country))`. Apply title-case formatting only in the UI layer via [`formatLabel()`](../lib/coffee-health/format.ts) in `components/coffee-health/`.
 
 ## Decision
 
@@ -295,7 +295,7 @@ TRUNCATE + INSERT would have worked for a one-time demo load but was rejected be
 
 ## Context
 
-The UI must support filtering by country, gender, sleep quality, stress level, and numeric ranges (age, BMI), with paginated results. The dataset may grow well beyond 10,000 rows; the architecture must not assume the browser can hold the full result set.
+The UI must support filtering by country, gender, sleep quality, stress level, and numeric ranges (age, BMI, coffee intake), with paginated results. The dataset may grow well beyond 10,000 rows; the architecture must not assume the browser can hold the full result set.
 
 The read path is implemented as a Next.js Server Component (`app/page.tsx`) calling `fetchCoffeeHealthRecords()` in `lib/coffee-health/queries.ts`.
 
@@ -311,13 +311,14 @@ The read path is implemented as a Next.js Server Component (`app/page.tsx`) call
 
 Execute **all filtering, counting, and pagination in PostgreSQL** through the Supabase server client:
 
-- Filters map to indexed columns with canonical equality/range predicates.
+- Filters map to indexed columns with canonical equality/range predicates (`country`, `gender`, `sleep_quality`, `stress_level`, `age`, `bmi`, `coffee_intake`).
 - Default page size: 25 rows (`DEFAULT_PAGE_SIZE` in `search-params.ts`).
 - Offset pagination via `.range(from, to)` ordered by `id` ascending.
 - Exact total count returned alongside the page for UI range display ("Showing 1–25 of 4,832 matching records").
 - Only the current page (plus metadata) crosses the network boundary to the React tree.
+- [`RecordsTable`](../components/coffee-health/records-table.tsx) renders a scrollable subset of columns; booleans and categoricals are formatted via [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts).
 
-Single-column btree indexes exist on every filtered column in the migration. Composite indexes are documented but commented out, pending evidence from query plans.
+Single-column btree indexes exist on every filtered column (`20260609120000_create_coffee_health_records.sql` plus `20260610180000_add_coffee_intake_index.sql`). Composite indexes are documented but commented out, pending evidence from query plans.
 
 ### Read path architecture
 
@@ -326,7 +327,7 @@ The browser never receives the full dataset. Filtering, counting, and pagination
 ```
 Browser
    │
-   │  GET /?country=germany&gender=female&page=1
+   │  GET /?country=germany&gender=female&coffee_intake_min=2&page=1
    ▼
 URL Search Params
    │
@@ -406,8 +407,8 @@ Treat **URL search parameters as the source of truth** for filter and pagination
 
 - `app/page.tsx` awaits `searchParams` and passes them to `parseSearchParams()`.
 - `parseSearchParams()` in `lib/coffee-health/search-params.ts` validates and canonicalizes each parameter against the same vocabulary sets used at ingestion. Invalid values are silently ignored (fail-safe, not fail-closed).
-- `RecordsFilters` renders a **GET form** (`method="GET"`) — filters submit to the URL without JavaScript.
-- `RecordsPagination` builds prev/next links via `buildPageHref()`, preserving active filters across page changes.
+- `RecordsFilters` renders a **GET form** (`method="GET"`) with a hidden `page=1` field so applying filters always resets pagination.
+- `RecordsPagination` builds prev/next links via `buildFilterSearchParams()` so all active filters (including coffee intake ranges) survive page changes.
 - "Clear Filters" navigates to the base path, resetting all parameters.
 
 ### Filter state flow
@@ -421,7 +422,7 @@ User Selects Filters
   GET Form Submit                    RecordsFilters (method="GET")
         │
         ▼
-   URL Updated                       /?country=germany&age_min=30&page=1
+   URL Updated                       /?country=germany&age_min=30&coffee_intake_max=5&page=1
         │
         ▼
  Server Component                   app/page.tsx
@@ -445,7 +446,7 @@ User Selects Filters
 
 **Positive:**
 
-- URLs are **shareable and bookmarkable** — `/?country=germany&gender=female&age_min=30&page=2` fully describes application state.
+- URLs are **shareable and bookmarkable** — `/?country=germany&gender=female&age_min=30&coffee_intake_min=2&page=2` fully describes application state.
 - Server Components remain **stateless between requests**; no server-side session store for filter state.
 - GET form submission provides **progressive enhancement** — filtering works without client-side JavaScript.
 - Filter parsing reuses ingestion vocabulary constants, preventing drift between what the UI accepts and what the database stores.
@@ -493,7 +494,7 @@ What was built:
 
 | Concern | Current implementation |
 | --- | --- |
-| Indexes | Single-column btree on each filtered column |
+| Indexes | Single-column btree on each filtered column (including `coffee_intake`) |
 | Pagination | Offset via Supabase `.range()` |
 | Ingestion transport | Batched Supabase HTTP upsert (500 rows) |
 | CSV handling | Full file read into memory |

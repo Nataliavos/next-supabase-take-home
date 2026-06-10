@@ -4,7 +4,7 @@ Next.js app with local [Supabase](https://supabase.com) development via Docker.
 
 ## Submission
 
-Coffee health dataset loaded into `coffee_health_records` and exposed as a filterable, paginated table at [http://localhost:3000](http://localhost:3000) (Server Component + URL-driven filters).
+Coffee health dataset loaded into `coffee_health_records` and exposed as a filterable, paginated table at [http://localhost:3000](http://localhost:3000) (Server Component + URL-driven filters: country, gender, sleep quality, stress level, age/BMI/coffee intake ranges).
 
 **Run locally** (first time: `pnpm install` and `pnpm setup:env` to write `.env.local`):
 

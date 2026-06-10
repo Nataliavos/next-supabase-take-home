@@ -6,9 +6,12 @@ PostgreSQL schema and ingestion pipeline for the Medallo take-home: load `data/s
 
 | Artifact | Path |
 | --- | --- |
-| Migration | [`supabase/migrations/20260609120000_create_coffee_health_records.sql`](../supabase/migrations/20260609120000_create_coffee_health_records.sql) |
+| Migration (schema) | [`supabase/migrations/20260609120000_create_coffee_health_records.sql`](../supabase/migrations/20260609120000_create_coffee_health_records.sql) |
+| Migration (coffee_intake index) | [`supabase/migrations/20260610180000_add_coffee_intake_index.sql`](../supabase/migrations/20260610180000_add_coffee_intake_index.sql) |
 | Ingestion library | [`lib/ingestion/`](../lib/ingestion/) |
 | Import script | [`scripts/import-coffee-health.ts`](../scripts/import-coffee-health.ts) |
+| Query + URL filters | [`lib/coffee-health/`](../lib/coffee-health/) (`queries.ts`, `search-params.ts`, `format.ts`) |
+| UI | [`components/coffee-health/`](../components/coffee-health/) |
 
 ---
 
@@ -283,7 +286,7 @@ Separating concerns means:
 
 - Marketing copy or i18n can change without migrations.
 - SQL exports and analytics use stable keys.
-- Filter dropdowns map `value` (canonical) → `label` (formatted).
+- Filter dropdowns map `value` (canonical) → `label` (formatted) via [`formatLabel()`](../lib/coffee-health/format.ts) in `components/coffee-health/`.
 
 ## Why ingest-time normalization beats query-time transforms
 
@@ -378,7 +381,7 @@ constraint coffee_health_records_country_lowercase_check
 | --- | --- |
 | Ingestion (`lib/ingestion`) | Validate country against allow-list; store lowercase |
 | PostgreSQL | Index + CHECK integrity |
-| Next.js UI | Display labels, submit canonical filter values |
+| Next.js UI | Display labels via [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts); submit canonical filter values |
 
 When ISO codes or regions are needed later, introduce a `countries` reference table **with metadata**—not for casing alone.
 
@@ -409,6 +412,36 @@ Conversion happens only in [`parseBinaryFlag()`](../lib/ingestion/normalize.ts)�
 
 ---
 
+## Next.js UI: filters and results table
+
+Server Component at [`app/page.tsx`](../app/page.tsx) reads URL search params, fetches one page from Supabase, and renders filter form + table.
+
+### Supported filters
+
+| Filter | URL param(s) | Query predicate |
+| --- | --- | --- |
+| Country | `country` | `eq` on indexed `country` |
+| Gender | `gender` | `eq` on indexed `gender` |
+| Sleep quality | `sleep_quality` | `eq` on indexed `sleep_quality` |
+| Stress level | `stress_level` | `eq` on indexed `stress_level` |
+| Age range | `age_min`, `age_max` | `gte` / `lte` on indexed `age` |
+| BMI range | `bmi_min`, `bmi_max` | `gte` / `lte` on indexed `bmi` |
+| Coffee intake range | `coffee_intake_min`, `coffee_intake_max` | `gte` / `lte` on indexed `coffee_intake` |
+
+[`parseSearchParams()`](../lib/coffee-health/search-params.ts) validates and canonicalizes URL input. [`buildFilterSearchParams()`](../lib/coffee-health/search-params.ts) rebuilds the query string for pagination links so active filters survive page changes.
+
+Applying filters submits a GET form with a hidden `page=1` input so a new filter always resets to the first results page.
+
+### Results table columns
+
+[`fetchCoffeeHealthRecords()`](../lib/coffee-health/queries.ts) selects all fact-table columns; [`RecordsTable`](../components/coffee-health/records-table.tsx) displays a focused subset with horizontal scroll:
+
+ID, age, gender, country, coffee intake, sleep quality, stress level, BMI, sleep hours, heart rate, occupation, health issues, smoking, alcohol consumption.
+
+Presentation helpers live in [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts) (`formatLabel`, `formatDecimal`, `formatBoolean`) — separate from canonical storage in PostgreSQL.
+
+---
+
 ## Filtering Performance
 
 ```sql
@@ -418,6 +451,7 @@ WHERE country = 'germany'
   AND gender = 'female'
   AND age BETWEEN 30 AND 50
   AND bmi <= 25
+  AND coffee_intake BETWEEN 2 AND 5
 ORDER BY id
 LIMIT 50;
 ```
@@ -454,7 +488,7 @@ Canonical storage does not replace indexing or pagination; it removes a class of
 
 ## Indexing strategy
 
-- Single-column B-trees on every filtered column (in migration).
+- Single-column B-trees on every filtered column (initial migration + [`20260610180000_add_coffee_intake_index.sql`](../supabase/migrations/20260610180000_add_coffee_intake_index.sql) for coffee intake ranges).
 - Partial indexes if product focuses on subsets (e.g. `WHERE stress_level = 'high'`).
 - Defer composite indexes until `EXPLAIN (ANALYZE, BUFFERS)` proves combined filters are dominant.
 
@@ -541,9 +575,9 @@ SELECT country, COUNT(*) FROM coffee_health_records GROUP BY 1 ORDER BY 1 LIMIT 
 
 | Goal | How |
 | --- | --- |
-| Simplicity | One fact table, shared ingestion module |
-| Maintainability | Constants mirror ENUMs; tested normalizer |
-| Query performance | Sargable lowercase equality + indexes |
+| Simplicity | One fact table, shared ingestion module, GET-based filters |
+| Maintainability | Constants mirror ENUMs; tested normalizer; shared `format.ts` |
+| Query performance | Sargable lowercase equality + range indexes (incl. `coffee_intake`) |
 | Data integrity | Ingest validation + ENUM + CHECK |
 | Idempotent ingestion | UPSERT on `id`; safe repeated execution |
 | Ingestion strategy | One-off TS loader; COPY/seed rejected for transform needs; upgrade path documented |
