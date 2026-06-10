@@ -430,6 +430,7 @@ LIMIT 50;
 | `coffee_health_records_stress_level_idx` | `stress_level` |
 | `coffee_health_records_age_idx` | `age` |
 | `coffee_health_records_bmi_idx` | `bmi` |
+| `coffee_health_records_coffee_intake_idx` | `coffee_intake` |
 
 ### Composite indexes (add when justified)
 
