@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "import:coffee": "pnpm dlx tsx scripts/import-coffee-health.ts",
     "test": "vitest",
     "test:run": "vitest run"
   },
