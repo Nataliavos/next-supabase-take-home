@@ -58,11 +58,13 @@ export function RecordsTable({
             <TableHead>Gender</TableHead>
             <TableHead>Country</TableHead>
             <TableHead>Coffee intake</TableHead>
+            <TableHead>Caffeine (mg)</TableHead>
             <TableHead>Sleep quality</TableHead>
             <TableHead>Stress level</TableHead>
             <TableHead>BMI</TableHead>
             <TableHead>Sleep hours</TableHead>
             <TableHead>Heart rate</TableHead>
+            <TableHead>Activity (hrs)</TableHead>
             <TableHead>Occupation</TableHead>
             <TableHead>Health issues</TableHead>
             <TableHead>Smoking</TableHead>
@@ -81,6 +83,7 @@ export function RecordsTable({
                 <Badge variant="outline">{formatLabel(row.country)}</Badge>
               </TableCell>
               <TableCell>{formatDecimal(row.coffee_intake)}</TableCell>
+              <TableCell>{formatDecimal(row.caffeine_mg)}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{formatLabel(row.sleep_quality)}</Badge>
               </TableCell>
@@ -90,6 +93,7 @@ export function RecordsTable({
               <TableCell>{formatDecimal(row.bmi)}</TableCell>
               <TableCell>{formatDecimal(row.sleep_hours)}</TableCell>
               <TableCell>{row.heart_rate}</TableCell>
+              <TableCell>{formatDecimal(row.physical_activity_hours)}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{formatLabel(row.occupation)}</Badge>
               </TableCell>

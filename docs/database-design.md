@@ -434,9 +434,9 @@ Applying filters submits a GET form with a hidden `page=1` input so a new filter
 
 ### Results table columns
 
-[`fetchCoffeeHealthRecords()`](../lib/coffee-health/queries.ts) selects all fact-table columns; [`RecordsTable`](../components/coffee-health/records-table.tsx) displays a focused subset with horizontal scroll:
+[`fetchCoffeeHealthRecords()`](../lib/coffee-health/queries.ts) selects all fact-table columns; [`RecordsTable`](../components/coffee-health/records-table.tsx) displays the full dataset (all 16 columns) with horizontal scroll:
 
-ID, age, gender, country, coffee intake, sleep quality, stress level, BMI, sleep hours, heart rate, occupation, health issues, smoking, alcohol consumption.
+ID, age, gender, country, coffee intake, caffeine (mg), sleep quality, stress level, BMI, sleep hours, heart rate, physical activity (hrs), occupation, health issues, smoking, alcohol consumption.
 
 Presentation helpers live in [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts) (`formatLabel`, `formatDecimal`, `formatBoolean`) — separate from canonical storage in PostgreSQL.
 

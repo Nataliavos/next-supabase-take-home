@@ -316,7 +316,7 @@ Execute **all filtering, counting, and pagination in PostgreSQL** through the Su
 - Offset pagination via `.range(from, to)` ordered by `id` ascending.
 - Exact total count returned alongside the page for UI range display ("Showing 1–25 of 4,832 matching records").
 - Only the current page (plus metadata) crosses the network boundary to the React tree.
-- [`RecordsTable`](../components/coffee-health/records-table.tsx) renders a scrollable subset of columns; booleans and categoricals are formatted via [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts).
+- [`RecordsTable`](../components/coffee-health/records-table.tsx) renders all fact-table columns with horizontal scroll; booleans and categoricals are formatted via [`lib/coffee-health/format.ts`](../lib/coffee-health/format.ts).
 
 Single-column btree indexes exist on every filtered column (`20260609120000_create_coffee_health_records.sql` plus `20260610180000_add_coffee_intake_index.sql`). Composite indexes are documented but commented out, pending evidence from query plans.
 
