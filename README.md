@@ -2,6 +2,23 @@
 
 Next.js app with local [Supabase](https://supabase.com) development via Docker.
 
+## Submission
+
+Coffee health dataset loaded into `coffee_health_records` and exposed as a filterable, paginated table at [http://localhost:3000](http://localhost:3000) (Server Component + URL-driven filters).
+
+**Run locally** (first time: `pnpm install` and `pnpm setup:env` to write `.env.local`):
+
+```bash
+pnpx supabase db reset   # migrations + seed.sql (notes table)
+pnpm import:coffee       # loads 10,000 rows (idempotent upsert)
+pnpm dev                 # Supabase + Next.js → http://localhost:3000
+```
+
+**Documentation:**
+
+- [Database design & ingestion](docs/database-design.md) — schema, import pipeline, idempotency
+- [Architecture decisions](docs/architecture-decisions.md) — filtering, pagination, scale trade-offs
+
 ---
 
 ## Setup (English)
